@@ -12,24 +12,21 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
-
 import java.util.List;
 
 public class AirAdapter extends RecyclerView.Adapter<AirAdapter.VH> {
+    private final Context ctx;
+    private final List<Air> daftar;
 
-    private Context ctx;
-    private List<Air> daftar;
-
-    public AirAdapter(Context ctx, List<Air> daftar) {
+    public AirAdapter(@NonNull Context ctx, List<Air> daftar) {
         this.ctx = ctx;
         this.daftar = daftar;
     }
 
-    public class VH extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class VH extends RecyclerView.ViewHolder {
         private final TextView tvWaktu;
         private final TextView tvJumlahAir;
         private final ImageView gambar_gelas;
@@ -38,20 +35,18 @@ public class AirAdapter extends RecyclerView.Adapter<AirAdapter.VH> {
 
         public VH(@NonNull View itemView) {
             super(itemView);
-            this.tvWaktu = itemView.findViewById(R.id.tvWaktu);
-            this.tvJumlahAir = itemView.findViewById(R.id.tvJumlahAir);
-            this.gambar_gelas = itemView.findViewById(R.id.ivGelas);
-            this.menu = itemView.findViewById(R.id.btMenu);
+            tvWaktu = itemView.findViewById(R.id.tvWaktu);
+            tvJumlahAir = itemView.findViewById(R.id.tvJumlahAir);
+            gambar_gelas = itemView.findViewById(R.id.ivGelas);
+            menu = itemView.findViewById(R.id.btMenu);
 
-            this.menu.setOnClickListener(view -> showPopUpMenu(view));
+            menu.setOnClickListener(this::showPopUpMenu);
         }
 
         private void showPopUpMenu(View view) {
             PopupMenu popup = new PopupMenu(ctx, view);
             MenuInflater inflater = popup.getMenuInflater();
             inflater.inflate(R.menu.popup_menu, popup.getMenu());
-            popup.show();
-
             popup.setOnMenuItemClickListener(item -> {
                 int position = getAdapterPosition();
                 if (item.getItemId() == R.id.btUbah) {
@@ -68,6 +63,7 @@ public class AirAdapter extends RecyclerView.Adapter<AirAdapter.VH> {
                 }
                 return false;
             });
+            popup.show();
         }
 
         private void showNumberInputDialog() {
@@ -82,15 +78,17 @@ public class AirAdapter extends RecyclerView.Adapter<AirAdapter.VH> {
                 String jumlahAir = input.getText().toString();
                 Toast.makeText(ctx, "Jumlah air diubah menjadi: " + jumlahAir + "ML", Toast.LENGTH_SHORT).show();
             });
-
             builder.setNegativeButton("Batal", (dialog, which) -> dialog.cancel());
 
             AlertDialog dialog = builder.create();
             dialog.setOnShowListener(dialogInterface -> {
                 input.requestFocus();
                 input.postDelayed(() -> {
-                    android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) ctx.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.showSoftInput(input, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+                    android.view.inputmethod.InputMethodManager imm =
+                            (android.view.inputmethod.InputMethodManager) ctx.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (imm != null) {
+                        imm.showSoftInput(input, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+                    }
                 }, 100);
             });
             dialog.show();
@@ -98,11 +96,6 @@ public class AirAdapter extends RecyclerView.Adapter<AirAdapter.VH> {
 
         public void setAirItem(Air airItem) {
             this.airItem = airItem;
-        }
-
-        @Override
-        public void onClick(View view) {
-            Toast.makeText(ctx, airItem.waktu, Toast.LENGTH_SHORT).show();
         }
     }
 
